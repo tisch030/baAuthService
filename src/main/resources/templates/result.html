@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de"
+	  xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+	<head>
+		<title>Authorization Result</title>
+	</head>
+
+	<body sec:authorize="isAuthenticated()">
+
+		<div class="container">
+			<form id="auth-code-issue" method="post" th:action="@{/api/auth/result}">
+				<button type="submit" hidden="">Map</button>
+			</form>
+		</div>
+
+		<script>
+
+            document.body.onload = init;
+
+            function init() {
+                const urlParameterMap = decodeURLParams(window.location.search);
+
+                addStateAndAuthorizationCodeAsHiddenParameter(urlParameterMap);
+                const form = document.getElementById("auth-code-issue");
+                form.submit();
+            }
+
+            /**
+             * Builds a map of url parameter name to parameter value by decoding the
+             * given url parameter string.
+             *
+             * @param urlParameters the raw url parameter string.
+             * @returns a map of url parameter to parameter value.
+             */
+            function decodeURLParams(urlParameters) {
+                const hashes = urlParameters.slice(urlParameters.indexOf('?') + 1).split('&');
+                return hashes.reduce((params, hash) => {
+                    const split = hash.indexOf('=');
+                    const key = hash.slice(0, split);
+                    const val = hash.slice(split + 1);
+                    return Object.assign(params, {[key]: decodeURIComponent(val)});
+                }, {});
+            }
+
+            /**
+             * Adds the state and authorization code, which has been previously
+             * obtained by decoding the url parameters, to the result form,
+             * in order to issue the authorization code to the client that requested it.
+             *
+             * @param urlParameterMap the parameter map containing the state and authorization code.
+             */
+            function addStateAndAuthorizationCodeAsHiddenParameter(urlParameterMap) {
+                const authCodeInput = document.createElement("input");
+                authCodeInput.setAttribute("type", "hidden");
+                authCodeInput.setAttribute("name", "code");
+                authCodeInput.setAttribute("value", urlParameterMap.code);
+
+                const stateInput = document.createElement("input");
+                stateInput.setAttribute("type", "hidden");
+                stateInput.setAttribute("name", "state");
+                stateInput.setAttribute("value", urlParameterMap.state);
+
+                const mappingFormDiv = document.getElementById("auth-code-issue");
+                mappingFormDiv.appendChild(authCodeInput);
+                mappingFormDiv.appendChild(stateInput);
+            }
+
+		</script>
+	</body>
+</html>

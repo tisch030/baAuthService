@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de"
+	  xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="https://www.thymeleaf.org">
+
+	<head>
+		<title>AS Login Page</title>
+	</head>
+
+	<body>
+
+		<div style="display: flex; align-items: center; flex-direction: column;">
+
+			<div th:if="${error}" th:switch="${error}">
+				<div th:case="'badcredentials'">Invalid username or password.</div>
+				<div th:case="'banned'">Too many failed login attempts. Only [[${maxLoginsPerMinute}]] failed logins
+					per minute are allowed. Please wait one minute before the next retry.
+				</div>
+				<div th:case="*">Authentication failure.</div>
+			</div>
+
+			<h2>Anmeldeformular</h2>
+
+			<form id="login-form" method="post" th:action="${loginEndpoint}">
+
+				<label for="username">Username</label><br>
+				<input type="text" id="username" name="username" placeholder="Username"
+					   required
+					   autofocus><br>
+
+				<label for="password" class="sr-only">Password</label><br>
+				<input type="password" id="password" name="password" placeholder="Password"
+					   required><br>
+
+				<button type="submit">Anmelden</button>
+			</form>
+
+
+			<div id="idpButtons" style="display: flex; flex-direction: column; flex-grow: initial; margin-top: 15px;">
+				<form th:each="identityProvider : ${identityProviders}" method="get"
+					  style="display: flex; margin-bottom: 5px;"
+					  th:action="${identityProvider.authenticationUrl}">
+					<button type="submit" th:text="${identityProvider.buttonLabel}" style="flex: 1;"></button>
+				</form>
+			</div>
+
+		</div>
+	</body>
+</html>

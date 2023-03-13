@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="de"
+	  xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="https://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+	<head>
+		<title>IDP Mapping</title>
+	</head>
+
+	<body sec:authorize="isAuthenticated()">
+
+		<div>
+			<form id="mapping-form" method="post" th:action="@{/api/auth/idp-mapping}">
+				<h2>Mapping</h2>
+				<div>
+					<label for="username">Username</label>
+					<input type="text" id="username" name="username" placeholder="Username" required autofocus>
+				</div>
+				<div>
+					<label for="password">Password</label>
+					<input type="password" id="password" name="password" placeholder="Password" required>
+				</div>
+				<button type="submit">Map</button>
+			</form>
+			<div id="errors"></div>
+		</div>
+
+		<form method="post" th:action="@{/api/auth/logout}" style="margin-right: 50px;">
+			<button type="submit">Abmelden</button>
+		</form>
+
+		<script>
+            document.body.onload = init;
+
+            function init() {
+                const urlParameterMap = decodeURLParams(window.location.search);
+                addErrorText(urlParameterMap);
+                addStateAndAuthorizationCodeAsHiddenParameter(urlParameterMap);
+            }
+
+            /**
+             * Adds the error message to the document bom, if there is a error.
+             *
+             * @param urlParameterMap the parameter map containing the possible error message.
+             */
+            function addErrorText(urlParameterMap) {
+                if (!urlParameterMap.error) {
+                    return;
+                }
+
+                const errorsDiv = document.getElementById("errors");
+                const errorTextDiv = document.createElement("div");
+                const errorValue = document.createTextNode(urlParameterMap.error);
+
+                errorTextDiv.appendChild(errorValue);
+                errorsDiv.appendChild(errorTextDiv);
+            }
+
+            /**
+             * Adds the state and authorization code, which has been previously
+             * obtained by decoding the url parameters, to the idp mapping form,
+             * in order to exchange the authentication which corresponds to the
+             * authorization code and state with the newly mapped authentication information.
+             *
+             * @param urlParameterMap the parameter map containing the state and authorization code.
+             */
+            function addStateAndAuthorizationCodeAsHiddenParameter(urlParameterMap) {
+                const authCodeInput = document.createElement("input");
+                authCodeInput.setAttribute("type", "hidden");
+                authCodeInput.setAttribute("name", "code");
+                authCodeInput.setAttribute("value", urlParameterMap.code);
+
+                const stateInput = document.createElement("input");
+                stateInput.setAttribute("type", "hidden");
+                stateInput.setAttribute("name", "state");
+                stateInput.setAttribute("value", urlParameterMap.state);
+
+                const mappingFormDiv = document.getElementById("mapping-form");
+                mappingFormDiv.appendChild(authCodeInput);
+                mappingFormDiv.appendChild(stateInput);
+            }
+
+            /**
+             * Builds a map of url parameter name to parameter value by decoding the
+             * given url parameter string.
+             *
+             * @param urlParameters the raw url parameter string.
+             * @returns a map of url parameter to parameter value.
+             */
+            function decodeURLParams(urlParameters) {
+                const hashes = urlParameters.slice(urlParameters.indexOf('?') + 1).split('&');
+                return hashes.reduce((params, hash) => {
+                    const split = hash.indexOf('=');
+                    const key = hash.slice(0, split);
+                    const val = hash.slice(split + 1);
+                    return Object.assign(params, {[key]: decodeURIComponent(val)});
+                }, {});
+            }
+		</script>
+
+	</body>
+</html>

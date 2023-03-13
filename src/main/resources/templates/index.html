@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de"
+	  xmlns="http://www.w3.org/1999/xhtml"
+	  xmlns:th="https://www.thymeleaf.org"
+	  xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+	<head>
+		<title>AS Homepage</title>
+	</head>
+
+	<body sec:authorize="isAuthenticated()">
+
+		<div id="homepage-header" style="display: flex; align-items: center; justify-content: space-between;">
+			<h3 style="margin-left: 50px;">Authorization-Server von CompanyX - Ihrem Campus-Management-System</h3>
+
+			<form method="post" th:action="@{/api/auth/logout}" style="margin-right: 50px;">
+				<button type="submit">Abmelden</button>
+			</form>
+		</div>
+
+		<div>
+			<div th:if="${localAuthentication}" style="text-align: center">
+				Wilkommen zurück <span th:text="${localAuthentication.username}"></span><br>
+				<span>Du hast die lokale Authentifizierung benutzt.</span>
+			</div>
+
+			<div th:if="${samlPrincipal}" style="text-align: center">
+				Wilkommen zurück <span th:text="${samlPrincipal.name}"></span><br>
+				<span>Du hast dich mit einem SAML Provider authentifiziert.</span> <br>
+				Folgende Attribute haben wir erhalten: <span th:text="${samlPrincipal.getAttributes()}"></span><br><br>
+
+				<div th:if="!${samlUserDetails.getPersonId()}">
+					<span>Du hast die Informationen von dem SAML Provider noch nicht mit einem lokalen Zugang verknüpft.</span>
+				</div>
+				<br>
+
+				<div th:if="${samlUserDetails.getPersonId()}">
+					<span>Du hast folgenden lokalen Zugang mit den Informationen von dem SAML Provider verknüpft:</span>
+					<br>
+					<span th:text="${samlUserDetails.getUsername()}"></span>
+				</div>
+			</div>
+
+			<div th:if="${oidcPrincipal}" style="text-align: center">
+				Wilkommen zurück <span th:text="${oidcPrincipal.getPreferredUsername()}"></span><br>
+				<span>Du hast dich mit einem OIDC Provider authentifiziert.</span> <br>
+				Folgende Attribute haben wir erhalten: <span th:text="${oidcPrincipal.getClaims()}"></span><br><br>
+
+				<div th:if="!${oidcUserDetails.getPersonId()}">
+					<span>Du hast die Informationen von dem OIDC Provider noch nicht mit einem lokalen Zugang verknüpft.</span>
+				</div>
+				<br>
+
+				<div th:if="${oidcUserDetails.getPersonId()}">
+					<span>Du hast folgenden lokalen Zugang mit den Informationen von dem OIDC Provider verknüpft:</span>
+					<br>
+					<span th:text="${oidcUserDetails.getUsername()}"></span>
+				</div>
+			</div>
+
+		</div>
+
+	</body>
+</html>
